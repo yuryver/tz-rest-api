@@ -1,7 +1,3 @@
-[![Build Status](https://app.snap-ci.com/devopsteam01/FA/branch/master/build_image)](https://app.snap-ci.com/devopsteam01/FA/branch/master)
-
-[![Build Status](https://travis-ci.org/devopsteam01/FA.svg?branch=master)](https://travis-ci.org/devopsteam01/FA)
-
 # Introduction
 
 The Dropwizard example application was developed to, as its name implies, 
