@@ -1,0 +1,35 @@
+plugins {
+    id 'org.hidetake.ssh' version '2.9.0'
+}
+
+ssh.settings {
+    knownHosts = allowAnyHosts
+
+}
+
+remotes {
+    development {
+        host = '192.168.33.62'
+        user = 'vagrant'
+        password = 'vagrant'
+        //identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+    }
+}
+
+task deploy() << {
+    ssh.run {
+        session(remotes.development) {
+            execute 'echo Stopping REST API service...'
+            execute 'pkill -f java', ignoreError: true
+            remove '/deployments/fa'
+            remove 'target'
+            execute 'echo Sending deployment archives...'
+            put from: 'fa', into: '/deployments'
+
+            execute 'echo Setup the h2 database...'
+            execute 'java -jar /deployments/fa/fa-rest-api-1.0-all.jar db migrate  /deployments/fa/example.yml'
+            execute 'echo Starting REST API service...'
+            execute 'nohup java -jar /deployments/fa/fa-rest-api-1.0-all.jar server /deployments/fa/example.yml > console.log &'
+        }
+    }
+}
