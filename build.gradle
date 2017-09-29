@@ -18,7 +18,7 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransf
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'application'
 apply plugin: "jacoco"
-apply plugin: 'org.sonarqube'
+apply plugin: "org.sonarqube"
 
 // Use Java 8 by default
 sourceCompatibility = '1.8'
@@ -42,7 +42,8 @@ dependencies {
         'io.dropwizard:dropwizard-servlets:1.0.5',
         'io.dropwizard.metrics:metrics-core:1.0.5',
         'io.dropwizard.metrics:metrics-annotation:1.0.5',
-        'com.h2database:h2:1.4.+'
+        'com.h2database:h2:1.4.+',
+        'org.joda:joda-convert:1.9.2'
     )
 
     testCompile (
@@ -87,5 +88,5 @@ run {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.2'
+    gradleVersion = '3.5.1'
 }
