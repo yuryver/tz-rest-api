@@ -28,7 +28,7 @@ targetCompatibility = '1.8'
 mainClassName = 'com.example.helloworld.HelloWorldApplication'
 
 dependencies {
-    compile (        
+    compile (
         'io.dropwizard:dropwizard-auth:1.0.5',
         'io.dropwizard:dropwizard-core:1.0.5',
         'io.dropwizard:dropwizard-client:1.0.5',

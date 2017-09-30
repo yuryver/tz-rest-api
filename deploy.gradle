@@ -9,27 +9,30 @@ ssh.settings {
 
 remotes {
     development {
-        host = '192.168.33.62'
-        user = 'vagrant'
-        password = 'vagrant'
-        //identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+        host = System.properties['deploy.server']
+        user = System.properties['user.name']
+        password = System.properties['user.password']
+        //identity = file("id_rsa")
     }
 }
 
-task deploy() << {
-    ssh.run {
-        session(remotes.development) {
-            execute 'echo Stopping REST API service...'
-            execute 'pkill -f java', ignoreError: true
-            remove '/deployments/fa'
-            remove 'target'
-            execute 'echo Sending deployment archives...'
-            put from: 'fa', into: '/deployments'
+task deploy() {
+    doLast {
+        ssh.run {
+            session(remotes.development) {
+                execute 'echo Stopping REST API service...'
+                execute 'pkill -f java', ignoreError: true
+                remove './deployments'
 
-            execute 'echo Setup the h2 database...'
-            execute 'java -jar /deployments/fa/fa-rest-api-1.0-all.jar db migrate  /deployments/fa/example.yml'
-            execute 'echo Starting REST API service...'
-            execute 'nohup java -jar /deployments/fa/fa-rest-api-1.0-all.jar server /deployments/fa/example.yml > console.log &'
+                execute 'echo Sending deployment archives...'
+                execute 'mkdir ./deployments'
+                put from: 'tz', into: './deployments'
+
+                execute 'echo Setup the h2 database...'
+                execute "java -jar ./deployments/tz/tz-rest-api-${myVersion}-all.jar db migrate ./deployments/tz/example.yml"
+                execute 'echo Starting REST API service...'
+                execute "nohup java -jar ./deployments/tz/tz-rest-api-${myVersion}-all.jar server ./deployments/tz/example.yml > console.log &"
+            }
         }
     }
 }
