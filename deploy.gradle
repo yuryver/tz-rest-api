@@ -22,7 +22,7 @@ task deploy() {
             session(remotes.development) {
                 execute 'echo Stopping REST API service...'
                 execute 'pkill -f java', ignoreError: true
-                remove './deployments'
+                remove './deployments', './target'
 
                 execute 'echo Sending deployment archives...'
                 execute 'mkdir ./deployments'
