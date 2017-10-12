@@ -1,0 +1,125 @@
+<pipelines group="TZ-REST-API">
+    <pipeline name="tz-rest-api-build" isLocked="true">
+      <materials>
+        <git url="https://github.com/fercho-ayala/tz-rest-api.git" />
+      </materials>
+      <stage name="Checkout" cleanWorkingDir="true">
+        <jobs>
+          <job name="Assemble" timeout="10">
+            <tasks>
+              <exec command="./gradlew">
+                <arg>clean</arg>
+                <arg>assemble</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="Test">
+        <jobs>
+          <job name="Testing">
+            <tasks>
+              <exec command="./gradlew">
+                <arg>test</arg>
+                <arg>check</arg>
+                <arg>JacocoTestReport</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <tabs>
+              <tab name="UnitTest" path="html-reports/test/index.html" />
+              <tab name="CodeCoverage" path="html-reports/jacocoHtml/index.html" />
+            </tabs>
+            <artifacts>
+              <test src="build/test-results/test" dest="test-results" />
+              <artifact src="build/reports/tests/test" dest="html-reports" />
+              <artifact src="build/jacocoHtml" dest="html-reports" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="CodeQuality">
+        <jobs>
+          <job name="Sonarqube">
+            <tasks>
+              <exec command="./gradlew">
+                <arg>sonarqube</arg>
+                <arg>-Dsonar.host.url=http://sonarqube:9000</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="Package">
+        <jobs>
+          <job name="Jar">
+            <tasks>
+              <exec command="./gradlew">
+                <arg>shadowJar</arg>
+              </exec>
+            </tasks>
+            <artifacts>
+              <artifact src="build/libs/*-all.jar" dest="tz" />
+              <artifact src="example.yml" dest="tz" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="tz-rest-api-deploy" isLocked="true">
+      <materials>
+        <git url="https://github.com/fercho-ayala/tz-rest-api.git" />
+        <pipeline pipelineName="tz-rest-api-build" stageName="Package" />
+      </materials>
+      <stage name="Deployment">
+        <jobs>
+          <job name="Deploy">
+            <tasks>
+              <fetchartifact pipeline="tz-rest-api-build" stage="Package" job="Jar" srcdir="tz">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="./gradlew">
+                <arg>-b</arg>
+                <arg>deploy.gradle</arg>
+                <arg>deploy</arg>
+                <arg>-Ddeploy.server=10.28.113.255</arg>
+                <arg>-Duser.name=ubuntu</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="tz-rest-api-test" isLocked="true">
+      <materials>
+        <git url="https://github.com/fercho-ayala/tz-acceptance-tests.git" />
+        <pipeline pipelineName="tz-rest-api-deploy" stageName="Deployment" />
+      </materials>
+      <stage name="Acceptance">
+        <jobs>
+          <job name="Test">
+            <tasks>
+              <exec command="./gradlew">
+                <arg>clean</arg>
+                <arg>test</arg>
+                <arg>-Drest.service.url=http://10.28.113.255:8080</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="./gradlew">
+                <arg>cucumber</arg>
+                <runif status="any" />
+              </exec>
+            </tasks>
+            <tabs>
+              <tab name="AcceptanceTests" path="html-reports/cucumber-html-reports/overview-features.html" />
+            </tabs>
+            <artifacts>
+              <artifact src="build/reports/cucumber-html-reports" dest="html-reports" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </pipelines>
