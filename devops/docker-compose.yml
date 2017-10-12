@@ -1,0 +1,31 @@
+version: '3'
+services:
+  gocd_server:
+    image: "gocd/gocd-server:v17.3.0"
+    ports:
+      - "8153:8153"
+      - "8154:8154"
+    links:
+      - gocd_agent
+
+  gocd_agent:
+    image: "gocd/gocd-agent-alpine-3.5:v17.3.0"
+    environment:
+      - GO_SERVER_URL=https://gocd_server:8154/go
+    volumes:
+      - ./godata:/godata
+      - ./go:/home/go
+
+  sonarqube:
+    image: "sonarqube:5.6.6-alpine"
+    ports:
+      - "9000:9000"
+      - "9092:9092"
+    links:
+      - gocd_agent
+
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1450
