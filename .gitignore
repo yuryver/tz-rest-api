@@ -5,3 +5,9 @@
 .gradle/*
 build/*
 target/*
+bin/*
+
+# IDE
+.project
+.settings/*
+.classpath

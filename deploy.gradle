@@ -11,8 +11,7 @@ remotes {
     development {
         host = System.properties['deploy.server']
         user = System.properties['user.name']
-        password = System.properties['user.password']
-        //identity = file("id_rsa")
+        identity = System.properties['deploy.key']
     }
 }
 
